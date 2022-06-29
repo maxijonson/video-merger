@@ -9,12 +9,14 @@ import {
     LISTS_DIR,
     MAX_FILE_COUNT,
     PORT,
+    FILES_FIELD,
 } from "./config/constants";
 import authenticate from "./middleware/authenticate";
 import logMiddleware from "./middleware/logRequest";
 import receiveVideos from "./middleware/receiveVideos";
 import flush from "./utils/flush";
 import CleanupService from "./services/CleanupService/CleanupService";
+import validateFiles from "./middleware/validateFiles";
 
 const app = express();
 const cleanupService = new CleanupService();
@@ -27,15 +29,10 @@ app.post(
     "/",
     authenticate,
     logMiddleware,
-    receiveVideos.array("files", MAX_FILE_COUNT),
+    receiveVideos.array(FILES_FIELD, MAX_FILE_COUNT),
+    validateFiles(),
     async (req, res) => {
-        const { files } = req;
-        if (!files) return res.status(400).send("No files were uploaded.");
-        if (!_.isArray(files))
-            return res.status(400).send("Invalid file data structure.");
-        if (files.length === 0)
-            return res.status(400).send("No files were uploaded.");
-
+        const files = req.files! as Express.Multer.File[];
         const outputFilePath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
         const listFilePath = path.join(LISTS_DIR, `${uuid()}.txt`);
         const ffmpegCommand = `ffmpeg -f concat -safe 0 -i ${listFilePath} -c copy ${outputFilePath}`;

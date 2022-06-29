@@ -7,3 +7,4 @@ export const UPLOADS_DIR = path.join(TMP_DIR, "uploads");
 export const OUTPUTS_DIR = path.join(TMP_DIR, "outputs");
 export const LISTS_DIR = path.join(TMP_DIR, "lists");
 export const MERGE_LIFESPAN = 1000 * 10;
+export const FILES_FIELD = "files";
