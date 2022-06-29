@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+        /* Compilation */
+        "incremental": true,
+        "target": "ES6",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true, // Automatically true when "esModuleInterop" is true
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "allowJs": true,
+        "sourceMap": true,
+        "preserveWatchOutput": true,
+        "pretty": true,
+        "newLine": "LF",
+        "types": ["node"],
+        /* Rules */
+
+        "strict": true,
+        "exactOptionalPropertyTypes": false,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "forceConsistentCasingInFileNames": true
+        /* Debug */
+        // "traceResolution": true, // Prints the resolved file paths. Useful when trying to find out why a file is not resolving.
+        // "listFiles": true, // Prints the files that are being compiled.
+        // "listEmittedFiles": true, // Prints the files that are emitted.
+    },
+    "include": ["src"]
+}
