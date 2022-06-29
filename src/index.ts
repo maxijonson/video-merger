@@ -19,7 +19,7 @@ import flush from "./utils/flush";
 const app = express();
 const removeTimeouts: NodeJS.Timeout[] = [];
 
-app.get("/", logMiddleware, (_req, res) => {
+app.get("/", authenticate, logMiddleware, (_req, res) => {
     return res.sendStatus(200);
 });
 
