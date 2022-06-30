@@ -18,7 +18,13 @@ You may host this server on your local machine or on a cloud server, such as Her
 If you're running locally, you can just use ts-node to run the server.
 
 ```bash
-npm start
+npm run dev
+```
+
+or if you insist to run it on pure JS
+
+```bash
+npm run build && npm start
 ```
 
 ## Usage (Heroku)

@@ -6,7 +6,8 @@
     "module": "dist/esm/index.js",
     "types": "dist/@types/index.d.ts",
     "scripts": {
-        "start": "ts-node src/index.ts",
+        "start": "node dist/cjs/index.js",
+        "dev": "ts-node src/index.ts",
         "watch": "nodemon",
         "clean": "rm -rf dist",
         "build": "npm-run-all clean build:esm build:cjs build:types",
