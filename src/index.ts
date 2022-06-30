@@ -1,20 +1,27 @@
-import fs from "fs-extra";
-import path from "path";
-import { exec } from "child_process";
-import { v4 as uuid } from "uuid";
 import express from "express";
 import _ from "lodash";
-import { OUTPUTS_DIR, LISTS_DIR, FILES_FIELD } from "./config/constants";
+import chalk from "chalk";
+import { FILES_FIELD } from "./config/constants";
 import authenticate from "./middleware/authenticate";
 import logMiddleware from "./middleware/logRequest";
 import receiveVideos from "./middleware/receiveVideos";
 import flush from "./utils/flush";
 import CleanupService from "./services/CleanupService/CleanupService";
 import validateFiles from "./middleware/validateFiles";
-import { MAX_FILE_COUNT, PORT } from "./config/config";
+import {
+    MAX_FILE_COUNT,
+    MAX_FILE_SIZE,
+    CLEANUP_OUTPUT_DELAY,
+    PASSWORD,
+    PORT,
+    CLEANUP_MERGERS_DELAY,
+    CLEANUP_INPUT_DELAY,
+} from "./config/config";
+import MergerService from "./services/MergerService/MergerService";
 
 const app = express();
 const cleanupService = new CleanupService();
+const mergerService = new MergerService();
 
 app.get("/", authenticate, logMiddleware, (_req, res) => {
     return res.sendStatus(200);
@@ -25,49 +32,64 @@ app.post(
     authenticate,
     logMiddleware,
     receiveVideos.array(FILES_FIELD, MAX_FILE_COUNT),
-    validateFiles(),
+    validateFiles,
     async (req, res) => {
         const files = req.files! as Express.Multer.File[];
-        const outputFilePath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
-        const listFilePath = path.join(LISTS_DIR, `${uuid()}.txt`);
-        const ffmpegCommand = `ffmpeg -f concat -safe 0 -i ${listFilePath} -c copy ${outputFilePath}`;
-        const cleanupId = cleanupService.prepare([
-            listFilePath,
-            outputFilePath,
-            ...files.map((f) => f.path),
-        ]);
 
-        await fs.outputFile(
-            listFilePath,
-            files.map((f) => `file ${f.path.replace(/\\/g, "/")}`).join("\n")
+        try {
+            const mergerId = mergerService.create();
+            mergerService.append(mergerId, ...files);
+
+            const output = await mergerService.merge(mergerId);
+            if (!output) {
+                throw new Error("No output");
+            }
+            cleanupService.scheduleCleanup([output], CLEANUP_OUTPUT_DELAY);
+            res.sendFile(output);
+        } catch (err) {
+            res.status(500);
+            if (err instanceof Error) {
+                console.error(chalk.red(err.message));
+                res.send(err.message);
+            }
+        }
+
+        cleanupService.scheduleCleanup(
+            files.map((f) => f.path),
+            CLEANUP_INPUT_DELAY
         );
-
-        exec(ffmpegCommand, async (err) => {
-            cleanupService.schedule(cleanupId);
-
-            if (err) {
-                console.error(err);
-                return res.status(500).send("Error while merging files.");
-            }
-
-            console.info(`[OUT] ${new Date().toString()} - ${outputFilePath}`);
-            if (req.query.base64 !== undefined) {
-                const base64 = await fs.readFile(outputFilePath, "base64");
-                return res.send(base64);
-            }
-            return res.sendFile(outputFilePath);
-        });
-        return undefined;
     }
 );
 
 app.post("/flush", authenticate, logMiddleware, async (_req, res) => {
-    cleanupService.cancelAll();
+    cleanupService.clear();
     flush();
     return res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
     flush();
-    console.info(`Server is running on port ${PORT}`);
+    console.info(chalk.hex("#ffa500")(`🔧 Password: ${PASSWORD}`));
+    console.info(chalk.hex("#ffa500")(`🔧 Port: ${PORT}`));
+    console.info(chalk.hex("#ffa500")(`🔧 Max File Count: ${MAX_FILE_COUNT}`));
+    console.info(chalk.hex("#ffa500")(`🔧 Max File Size: ${MAX_FILE_SIZE}`));
+    console.info(
+        chalk.hex("#ffa500")(
+            `🔧 Cleanup Files Delay: ${CLEANUP_OUTPUT_DELAY / 1000}s`
+        )
+    );
+    console.info(
+        chalk.hex("#ffa500")(
+            `🔧 Cleanup Mergers Delay: ${CLEANUP_MERGERS_DELAY / 1000}s`
+        )
+    );
+    console.info();
+
+    if (CLEANUP_MERGERS_DELAY > CLEANUP_OUTPUT_DELAY) {
+        console.warn(
+            chalk.hex("#ffa500")(
+                `⚠ Cleanup Mergers Delay is greater than Cleanup Files Delay. This means mergers may attempt to use files that no longer exist!`
+            )
+        );
+    }
 });

@@ -1,25 +1,29 @@
 import { v4 as uuid } from "uuid";
-import { MERGE_LIFESPAN } from "../../config/config";
 import Cleanup from "./Cleanup";
 
 class CleanupService {
     private cleanups: { [id: string]: Cleanup } = {};
 
-    public prepare(files: string[], when = MERGE_LIFESPAN): string {
-        const cleanup = new Cleanup(files, when);
+    public prepare(files: string[], delay: number): string {
         const id = uuid();
-        this.cleanups[id] = cleanup;
+        this.cleanups[id] = new Cleanup(id, files, delay, () => {
+            delete this.cleanups[id];
+        });
         return id;
     }
 
     public schedule(id: string) {
-        const cleanup = this.cleanups[id];
-        if (!cleanup) return;
-        cleanup.schedule();
+        this.cleanups[id]?.schedule();
     }
 
-    public cancelAll() {
+    public scheduleCleanup(files: string[], delay: number) {
+        const id = this.prepare(files, delay);
+        this.schedule(id);
+    }
+
+    public clear() {
         Object.values(this.cleanups).forEach((c) => c.cancel());
+        this.cleanups = {};
     }
 }
 

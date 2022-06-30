@@ -1,27 +1,36 @@
 import fs from "fs-extra";
+import moment from "moment";
+import schedule from "node-schedule";
 
 class Cleanup {
-    private files!: string[];
-    private delay!: number;
-    private timeout!: NodeJS.Timeout;
+    private job: schedule.Job | undefined;
 
-    constructor(files: string[], delay: number) {
-        this.files = files;
-        this.delay = delay;
-    }
+    constructor(
+        private id: string,
+        private files: string[],
+        private delay: number,
+        private doneListener: () => void
+    ) {}
 
     public schedule() {
-        this.timeout = setTimeout(() => {
-            this.cleanup();
-        }, this.delay);
+        this.cancel();
+        this.job = schedule.scheduleJob(
+            `Cleanup-${this.id}-removefiles`,
+            moment().add(this.delay, "ms").toDate(),
+            () => {
+                this.cleanup();
+            }
+        );
     }
 
     public cancel() {
-        clearTimeout(this.timeout);
+        this.job?.cancel();
+        this.job = undefined;
     }
 
-    private cleanup() {
-        return Promise.all(this.files.map((f) => fs.remove(f)));
+    private async cleanup() {
+        await Promise.all(this.files.map((f) => fs.remove(f)));
+        this.doneListener();
     }
 }
 
