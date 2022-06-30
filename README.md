@@ -25,6 +25,10 @@ npm start
 
 If you wish to host this server on Heroku, you can follow these steps. Please note that this server was not designed to be publically available and the security is limited to a single password in the `Authorization` header. If you do decide to host it on the internet, keep it as private as possible to avoid malicious people to abuse your resources.
 
+### 0. Fork this repo
+
+Fork this repo so you can attach your Heroku remote later.
+
 ### 1. Create a new Heroku app
 
 ```bash
