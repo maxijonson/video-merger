@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import { MERGE_LIFESPAN } from "../../config/constants";
+import { MERGE_LIFESPAN } from "../../config/config";
 import Cleanup from "./Cleanup";
 
 class CleanupService {

@@ -1,9 +1,6 @@
 import multer from "multer";
-import {
-    UPLOADS_DIR,
-    MAX_FILE_COUNT,
-    MAX_FILE_SIZE,
-} from "../config/constants";
+import { MAX_FILE_COUNT, MAX_FILE_SIZE } from "../config/config";
+import { UPLOADS_DIR } from "../config/constants";
 
 const receiveVideos = multer({
     dest: UPLOADS_DIR,

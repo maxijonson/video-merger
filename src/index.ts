@@ -4,19 +4,14 @@ import { exec } from "child_process";
 import { v4 as uuid } from "uuid";
 import express from "express";
 import _ from "lodash";
-import {
-    OUTPUTS_DIR,
-    LISTS_DIR,
-    MAX_FILE_COUNT,
-    PORT,
-    FILES_FIELD,
-} from "./config/constants";
+import { OUTPUTS_DIR, LISTS_DIR, FILES_FIELD } from "./config/constants";
 import authenticate from "./middleware/authenticate";
 import logMiddleware from "./middleware/logRequest";
 import receiveVideos from "./middleware/receiveVideos";
 import flush from "./utils/flush";
 import CleanupService from "./services/CleanupService/CleanupService";
 import validateFiles from "./middleware/validateFiles";
+import { MAX_FILE_COUNT, PORT } from "./config/config";
 
 const app = express();
 const cleanupService = new CleanupService();

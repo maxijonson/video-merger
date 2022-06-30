@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-
-const PASSWORD = process.env.PASSWORD || "letmein";
+import { PASSWORD } from "../config/config";
 
 /**
  * It goes without saying this is a very insecure way to do it, but it's a

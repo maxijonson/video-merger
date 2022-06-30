@@ -13,6 +13,10 @@ Some of the caveats are:
 
 You may host this server on your local machine or on a cloud server, such as Heroku. Whichever one you choose, make sure FFMPEG is installed and is in your PATH.
 
+## Configuration
+
+You can configure some parameters and limits in the [config](src/config/config.ts) file or provide the `process.env` variables.
+
 ## Usage (Local)
 
 If you're running locally, you can just use ts-node to run the server.
@@ -67,7 +71,7 @@ Authorization Header: `Authorization` : `<password>` (default is `letmein`)
 
 ### Merge videos into a single video
 
-Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src\config\constants.ts) to edit these limits.
+Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src/config/constants.ts) to edit these limits.
 
 Method: `POST`
 
@@ -85,7 +89,7 @@ files: File[]
 
 ### Merge videos into Base64
 
-Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src\config\constants.ts) to edit these limits.
+Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src/config/constants.ts) to edit these limits.
 
 Method: `POST`
 
