@@ -24,7 +24,7 @@ class MergerService {
 
     public create(): string {
         const id = uuid();
-        this.mergers[id] = new Merger();
+        this.mergers[id] = new Merger(id);
 
         schedule.scheduleJob(
             `Merger-${id}-cleanup`,
@@ -39,7 +39,11 @@ class MergerService {
     }
 
     public append(mergerId: string, ...files: Express.Multer.File[]) {
-        this.mergers[mergerId]?.append(...files);
+        const merger = this.mergers[mergerId];
+        if (!merger) {
+            throw new MergerNotFoundFault();
+        }
+        merger.append(...files);
     }
 
     public merge(mergerId: string) {

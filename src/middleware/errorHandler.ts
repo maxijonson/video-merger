@@ -4,9 +4,6 @@ import { MulterError } from "multer";
 import Fault from "../errors/Fault";
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-    console.error(chalk.red(err.message));
-    console.error(chalk.red(err.stack));
-
     if (err instanceof Fault) {
         return res.status(err.httpCode).send({
             code: err.httpCode,
@@ -20,6 +17,9 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
             message: err.message,
         });
     }
+
+    console.error(chalk.red(err.message));
+    console.error(chalk.red(err.stack));
 
     return res.status(500).send({
         code: 500,

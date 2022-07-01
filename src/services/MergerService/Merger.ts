@@ -17,7 +17,9 @@ class Merger {
     private output: string | undefined;
     private inputSize = 0;
 
-    constructor() {}
+    constructor(private id: string) {
+        this.log(`merge ${this.id}: Created`);
+    }
 
     public append(...files: Express.Multer.File[]) {
         if (this.output) {
@@ -32,6 +34,9 @@ class Merger {
             }
             this.inputFiles.push(f);
             this.inputSize += f.size;
+            this.log(
+                `merge ${this.id}: Add file "${f.originalname}" (${f.size} bytes)`
+            );
         });
     }
 
@@ -40,6 +45,8 @@ class Merger {
 
         const filePaths = this.inputFiles.map((f) => f.path);
         const outputFilePath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
+
+        this.log(`merge ${this.id}: Merging ${filePaths.length} files`);
 
         try {
             this.output = await new Promise<string>((resolve, reject) => {
@@ -61,6 +68,8 @@ class Merger {
             throw new MergeFault();
         }
 
+        this.log(`merge ${this.id}: Merged to ${this.output}`);
+
         return this.output;
     }
 
@@ -69,6 +78,10 @@ class Merger {
             this.output && fs.remove(this.output),
             ...this.inputFiles.map((f) => fs.remove(f.path)),
         ]);
+    }
+
+    private log(...message: string[]) {
+        console.info(chalk.bold.bgGreen("[Merger]"), chalk.green(message));
     }
 }
 

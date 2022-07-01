@@ -1,16 +1,14 @@
-import express from "express";
+import express, { Request } from "express";
 import _ from "lodash";
 import chalk from "chalk";
 import "./config/config";
-import { FILES_FIELD } from "./config/constants";
 import authenticate from "./middleware/authenticate";
 import logRequest from "./middleware/logRequest";
-import upload from "./middleware/upload";
 import flush from "./utils/flush";
-import validateFiles from "./middleware/validateFiles";
 import MergerService from "./services/MergerService/MergerService";
 import ConfigService from "./services/ConfigService/ConfigService";
 import errorHandler from "./middleware/errorHandler";
+import uploadMany from "./middleware/uploadMany";
 
 const app = express();
 const mergerService = MergerService.instance;
@@ -22,21 +20,34 @@ app.get("/", (_req, res) => {
     return res.sendStatus(200);
 });
 
-app.post(
-    "/",
-    upload.array(FILES_FIELD, config.maxFileUploadCount),
-    validateFiles,
-    async (req, res) => {
-        const files = req.files! as Express.Multer.File[];
+app.post("/", uploadMany, async (req, res) => {
+    const files = req.files! as Express.Multer.File[];
 
-        const mergerId = mergerService.create();
-        mergerService.append(mergerId, ...files);
+    const mergerId = mergerService.create();
+    mergerService.append(mergerId, ...files);
 
-        const output = await mergerService.merge(mergerId);
+    const output = await mergerService.merge(mergerId);
 
-        return res.sendFile(output);
-    }
-);
+    return res.sendFile(output);
+});
+
+app.post("/create", (_req, res) => {
+    const mergerId = mergerService.create();
+    return res.send({ id: mergerId });
+});
+
+app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
+    const { id } = req.params;
+    const files = req.files! as Express.Multer.File[];
+    mergerService.append(id, ...files);
+    return res.sendStatus(200);
+});
+
+app.post("/:id", async (req: Request<{ id: string }>, res) => {
+    const { id } = req.params;
+    const output = await mergerService.merge(id);
+    return res.sendFile(output);
+});
 
 app.post("/flush", async (_req, res) => {
     flush();

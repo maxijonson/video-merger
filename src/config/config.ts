@@ -48,4 +48,4 @@ ConfigService.instance
     .addConfig("maxFileUploadSize", "MAX_FILE_UPLOAD_SIZE", 100 * MB)
     .addConfig("maxMergerFileCount", "MAX_MERGER_FILE_COUNT", 10)
     .addConfig("maxMergerFileSize", "MAX_MERGER_FILE_SIZE", 100 * MB)
-    .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 5);
+    .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45);
