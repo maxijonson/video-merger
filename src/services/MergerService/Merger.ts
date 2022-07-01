@@ -1,74 +1,74 @@
-import schedule from "node-schedule";
 import fs from "fs-extra";
 import { exec } from "child_process";
 import path from "path";
 import { v4 as uuid } from "uuid";
-import moment from "moment";
 import chalk from "chalk";
 import createFfmpegCommand from "../../utils/createFfmpegCommand";
-import { LISTS_DIR, OUTPUTS_DIR } from "../../config/constants";
-import { CLEANUP_INPUT_DELAY } from "../../config/config";
+import { OUTPUTS_DIR } from "../../config/constants";
+import ConfigService from "../ConfigService/ConfigService";
+import MergerMaxFileCountFault from "../../errors/MergerMaxFileCountFault";
+import MergerMaxFileSizeFault from "../../errors/MergerMaxFileSizeFault";
+import MergeFault from "../../errors/MergeFault";
+
+const config = ConfigService.instance.getConfig();
 
 class Merger {
     private inputFiles: Express.Multer.File[] = [];
     private output: string | undefined;
+    private inputSize = 0;
+
+    constructor() {}
 
     public append(...files: Express.Multer.File[]) {
         if (this.output) {
             this.output = undefined;
         }
-        this.inputFiles.push(...files);
+        files.forEach((f) => {
+            if (this.inputFiles.length >= config.maxMergerFileCount) {
+                throw new MergerMaxFileCountFault();
+            }
+            if (f.size + this.inputSize > config.maxMergerFileSize) {
+                throw new MergerMaxFileSizeFault();
+            }
+            this.inputFiles.push(f);
+            this.inputSize += f.size;
+        });
     }
 
-    public async merge(base64 = false) {
+    public async merge() {
         if (this.output) return this.output;
 
-        const listFilePath = path.join(LISTS_DIR, `${uuid()}.txt`);
+        const filePaths = this.inputFiles.map((f) => f.path);
         const outputFilePath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
-
-        await fs.outputFile(
-            listFilePath,
-            this.inputFiles
-                .map((f) => `file ${f.path.replace(/\\/g, "/")}`)
-                .join("\n")
-        );
 
         try {
             this.output = await new Promise<string>((resolve, reject) => {
                 exec(
-                    createFfmpegCommand(listFilePath, outputFilePath),
+                    createFfmpegCommand(filePaths, outputFilePath),
                     async (err) => {
                         if (err) {
                             return reject(err);
                         }
-
-                        console.info(
-                            `[OUT] ${new Date().toString()} - ${outputFilePath}`
-                        );
-
-                        return resolve(
-                            base64
-                                ? await fs.readFile(outputFilePath, "base64")
-                                : outputFilePath
-                        );
+                        return resolve(outputFilePath);
                     }
                 );
             });
         } catch (err) {
             if (err instanceof Error) {
-                console.error(chalk.red(`Merge failed: ${err.message}`));
+                console.error(chalk.red(err.message));
+                console.error(chalk.red(err.stack));
             }
+            throw new MergeFault();
         }
 
-        schedule.scheduleJob(
-            `merge-${uuid()}-cleanup`,
-            moment().add(CLEANUP_INPUT_DELAY, "ms").toDate(),
-            () => {
-                fs.remove(listFilePath);
-            }
-        );
-
         return this.output;
+    }
+
+    public async dispose() {
+        await Promise.all([
+            this.output && fs.remove(this.output),
+            ...this.inputFiles.map((f) => fs.remove(f.path)),
+        ]);
     }
 }
 

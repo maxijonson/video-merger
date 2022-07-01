@@ -2,7 +2,10 @@ import { v4 as uuid } from "uuid";
 import schedule from "node-schedule";
 import moment from "moment";
 import Merger from "./Merger";
-import { CLEANUP_MERGERS_DELAY } from "../../config/config";
+import ConfigService from "../ConfigService/ConfigService";
+import MergerNotFoundFault from "../../errors/MergerNotFoundFault";
+
+const config = ConfigService.instance.getConfig();
 
 class MergerService {
     // eslint-disable-next-line no-use-before-define
@@ -25,8 +28,9 @@ class MergerService {
 
         schedule.scheduleJob(
             `Merger-${id}-cleanup`,
-            moment().add(CLEANUP_MERGERS_DELAY, "ms").toDate(),
-            () => {
+            moment().add(config.cleanupMergersDelay, "ms").toDate(),
+            async () => {
+                await this.mergers[id]?.dispose();
                 delete this.mergers[id];
             }
         );
@@ -39,7 +43,11 @@ class MergerService {
     }
 
     public merge(mergerId: string) {
-        return this.mergers[mergerId]?.merge();
+        const merger = this.mergers[mergerId];
+        if (!merger) {
+            throw new MergerNotFoundFault();
+        }
+        return merger.merge();
     }
 }
 

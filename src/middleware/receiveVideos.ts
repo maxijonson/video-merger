@@ -1,6 +1,8 @@
 import multer from "multer";
-import { MAX_FILE_COUNT, MAX_FILE_SIZE } from "../config/config";
 import { UPLOADS_DIR } from "../config/constants";
+import ConfigService from "../services/ConfigService/ConfigService";
+
+const config = ConfigService.instance.getConfig();
 
 const receiveVideos = multer({
     dest: UPLOADS_DIR,
@@ -9,8 +11,8 @@ const receiveVideos = multer({
         cb(null, file.mimetype === "video/mp4");
     },
     limits: {
-        files: MAX_FILE_COUNT,
-        fileSize: MAX_FILE_SIZE,
+        files: config.maxFileUploadCount,
+        fileSize: config.maxFileUploadSize,
     },
 });
 

@@ -1,4 +1,6 @@
-const createFfmpegCommand = (listPath: string, outputPath: string) =>
-    `ffmpeg -f concat -safe 0 -i ${listPath} -c copy ${outputPath}`;
+const createFfmpegCommand = (filePaths: string[], outputPath: string) => {
+    const input = filePaths.map((f) => f.replace(/\\/g, "/")).join("|");
+    return `ffmpeg -i "concat:${input}" -c copy ${outputPath}`;
+};
 
 export default createFfmpegCommand;

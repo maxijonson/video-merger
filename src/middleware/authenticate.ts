@@ -1,5 +1,7 @@
 import { RequestHandler } from "express";
-import { PASSWORD } from "../config/config";
+import ConfigService from "../services/ConfigService/ConfigService";
+
+const config = ConfigService.instance.getConfig();
 
 /**
  * It goes without saying this is a very insecure way to do it, but it's a
@@ -8,7 +10,7 @@ import { PASSWORD } from "../config/config";
  */
 const authenticate: RequestHandler = async (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (authHeader !== PASSWORD) {
+    if (config.usePassword && authHeader !== config.password) {
         console.info("[AUTH] Authentication failed", authHeader);
         return res.status(401).send("Unauthorized");
     }
