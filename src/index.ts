@@ -4,7 +4,7 @@ import chalk from "chalk";
 import "./config/config";
 import { FILES_FIELD } from "./config/constants";
 import authenticate from "./middleware/authenticate";
-import logMiddleware from "./middleware/logRequest";
+import logRequest from "./middleware/logRequest";
 import upload from "./middleware/upload";
 import flush from "./utils/flush";
 import validateFiles from "./middleware/validateFiles";
@@ -16,14 +16,14 @@ const app = express();
 const mergerService = MergerService.instance;
 const config = ConfigService.instance.getConfig();
 
-app.get("/", authenticate, logMiddleware, (_req, res) => {
+app.use(authenticate, logRequest);
+
+app.get("/", (_req, res) => {
     return res.sendStatus(200);
 });
 
 app.post(
     "/",
-    authenticate,
-    logMiddleware,
     upload.array(FILES_FIELD, config.maxFileUploadCount),
     validateFiles,
     async (req, res) => {
@@ -38,7 +38,7 @@ app.post(
     }
 );
 
-app.post("/flush", authenticate, logMiddleware, async (_req, res) => {
+app.post("/flush", async (_req, res) => {
     flush();
     return res.sendStatus(200);
 });
