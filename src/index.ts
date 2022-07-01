@@ -20,8 +20,8 @@ import {
 import MergerService from "./services/MergerService/MergerService";
 
 const app = express();
-const cleanupService = new CleanupService();
-const mergerService = new MergerService();
+const cleanupService = CleanupService.instance;
+const mergerService = MergerService.instance;
 
 app.get("/", authenticate, logMiddleware, (_req, res) => {
     return res.sendStatus(200);

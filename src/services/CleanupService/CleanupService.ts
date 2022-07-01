@@ -2,7 +2,19 @@ import { v4 as uuid } from "uuid";
 import Cleanup from "./Cleanup";
 
 class CleanupService {
+    // eslint-disable-next-line no-use-before-define
+    private static serviceInstance: CleanupService;
+
     private cleanups: { [id: string]: Cleanup } = {};
+
+    private constructor() {}
+
+    public static get instance(): CleanupService {
+        if (!CleanupService.serviceInstance) {
+            CleanupService.serviceInstance = new CleanupService();
+        }
+        return CleanupService.serviceInstance;
+    }
 
     public prepare(files: string[], delay: number): string {
         const id = uuid();

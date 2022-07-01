@@ -5,7 +5,19 @@ import Merger from "./Merger";
 import { CLEANUP_MERGERS_DELAY } from "../../config/config";
 
 class MergerService {
+    // eslint-disable-next-line no-use-before-define
+    private static serviceInstance: MergerService;
+
     private mergers: { [id: string]: Merger } = {};
+
+    private constructor() {}
+
+    public static get instance(): MergerService {
+        if (!MergerService.serviceInstance) {
+            MergerService.serviceInstance = new MergerService();
+        }
+        return MergerService.serviceInstance;
+    }
 
     public create(): string {
         const id = uuid();
