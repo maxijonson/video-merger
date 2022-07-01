@@ -59,51 +59,7 @@ git push heroku master
 
 ## Endpoints
 
-### Merge videos into a single video
-
-Returns 200OK.
-
-Method: `GET`
-
-URL: `/`
-
-Authorization Header: `Authorization` : `<password>` (default is `letmein`)
-
-### Merge videos into a single video
-
-Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src/config/constants.ts) to edit these limits.
-
-Method: `POST`
-
-URL: `/`
-
-Authorization Header: `Authorization` : `<password>` (default is `letmein`)
-
-Content-Type: `multipart/form-data`
-
-Body
-
-```
-files: File[]
-```
-
-### Merge videos into Base64
-
-Receives up to 10 videos with a maximum size of 100MB, then responds the merged videos. See [constants](src/config/constants.ts) to edit these limits.
-
-Method: `POST`
-
-URL: `/?base64`
-
-Authorization Header: `Authorization` : `<password>` (default is `letmein`)
-
-Content-Type: `multipart/form-data`
-
-Body
-
-```
-files: File[]
-```
+TODO: Add endpoints
 
 ## iOS Shortcut
 
