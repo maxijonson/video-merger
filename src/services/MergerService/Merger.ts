@@ -81,6 +81,7 @@ class Merger {
     }
 
     private log(...message: string[]) {
+        if (!config.mergerLogging) return;
         console.info(chalk.bold.bgGreen("[Merger]"), chalk.green(message));
     }
 }

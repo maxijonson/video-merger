@@ -36,6 +36,12 @@ declare global {
          * Adjust this depending on how long you want to allow users to prepare a merger and then merge it.
          */
         cleanupMergersDelay: number;
+
+        /** Enable request logging */
+        requestLogging: boolean;
+
+        /** Enable merger logging */
+        mergerLogging: boolean;
     }
 }
 
@@ -48,4 +54,6 @@ ConfigService.instance
     .addConfig("maxFileUploadSize", "MAX_FILE_UPLOAD_SIZE", 100 * MB)
     .addConfig("maxMergerFileCount", "MAX_MERGER_FILE_COUNT", 10)
     .addConfig("maxMergerFileSize", "MAX_MERGER_FILE_SIZE", 100 * MB)
-    .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45);
+    .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45)
+    .addConfig("requestLogging", "REQUEST_LOGGING", true)
+    .addConfig("mergerLogging", "MERGER_LOGGING", true);

@@ -1,13 +1,17 @@
 import chalk from "chalk";
 import { RequestHandler } from "express";
+import ConfigService from "../services/ConfigService/ConfigService";
 
-const logRequest: RequestHandler = (req, res, next) => {
+const config = ConfigService.instance.getConfig();
+
+const logRequest: RequestHandler = (req, _res, next) => {
+    if (!config.requestLogging) return next();
     const now = new Date();
     console.info(
         chalk.bold.bgCyan("[REQ]"),
         chalk.cyan(`${now.toString()} - ${req.method} ${req.url}`)
     );
-    next();
+    return next();
 };
 
 export default logRequest;
