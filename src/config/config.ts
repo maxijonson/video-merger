@@ -19,7 +19,7 @@ declare global {
         /** Maximum amount of files that can be uploaded at once */
         maxFileUploadCount: number;
 
-        /** Maximum file size of individual file uploaded */
+        /** Maximum file size of individual file uploaded (total would be maxFileUploadSize * maxFileUploadCount) */
         maxFileUploadSize: number;
 
         /** Maximum total files a merger can hold */

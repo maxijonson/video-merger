@@ -5,7 +5,7 @@ import "./config/config";
 import { FILES_FIELD } from "./config/constants";
 import authenticate from "./middleware/authenticate";
 import logMiddleware from "./middleware/logRequest";
-import receiveVideos from "./middleware/receiveVideos";
+import upload from "./middleware/upload";
 import flush from "./utils/flush";
 import validateFiles from "./middleware/validateFiles";
 import MergerService from "./services/MergerService/MergerService";
@@ -16,8 +16,6 @@ const app = express();
 const mergerService = MergerService.instance;
 const config = ConfigService.instance.getConfig();
 
-app.use(errorHandler);
-
 app.get("/", authenticate, logMiddleware, (_req, res) => {
     return res.sendStatus(200);
 });
@@ -26,7 +24,7 @@ app.post(
     "/",
     authenticate,
     logMiddleware,
-    receiveVideos.array(FILES_FIELD, config.maxFileUploadCount),
+    upload.array(FILES_FIELD, config.maxFileUploadCount),
     validateFiles,
     async (req, res) => {
         const files = req.files! as Express.Multer.File[];
@@ -53,3 +51,5 @@ app.listen(config.port, () => {
         console.info(chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`));
     });
 });
+
+app.use(errorHandler);

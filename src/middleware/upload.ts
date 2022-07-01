@@ -4,7 +4,7 @@ import ConfigService from "../services/ConfigService/ConfigService";
 
 const config = ConfigService.instance.getConfig();
 
-const receiveVideos = multer({
+const upload = multer({
     dest: UPLOADS_DIR,
     fileFilter: (_req, file, cb) => {
         // Accept mp4 files only
@@ -13,7 +13,8 @@ const receiveVideos = multer({
     limits: {
         files: config.maxFileUploadCount,
         fileSize: config.maxFileUploadSize,
+        fields: 0,
     },
 });
 
-export default receiveVideos;
+export default upload;

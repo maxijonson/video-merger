@@ -1,15 +1,16 @@
 import { RequestHandler } from "express";
 import _ from "lodash";
-import { ERROR_INVALID_STRUCTURE, ERROR_NO_FILES } from "../config/errors";
+import UploadEmptyFault from "../errors/UploadEmptyFault";
+import UploadInvalidStructureFault from "../errors/UploadInvalidStructureFault";
 
-const validateFiles: RequestHandler = async (req, res, next) => {
-    if (!req.files) return res.status(400).send(ERROR_NO_FILES);
+const validateFiles: RequestHandler = (req, _res, next) => {
+    if (!req.files) throw new UploadEmptyFault();
 
     const { files } = req;
 
-    if (!files) return res.status(400).send(ERROR_NO_FILES);
-    if (!_.isArray(files)) return res.status(400).send(ERROR_INVALID_STRUCTURE);
-    if (files.length === 0) return res.status(400).send(ERROR_NO_FILES);
+    if (!files) throw new UploadEmptyFault();
+    if (!_.isArray(files)) throw new UploadInvalidStructureFault();
+    if (files.length === 0) throw new UploadEmptyFault();
 
     return next();
 };
