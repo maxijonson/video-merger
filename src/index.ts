@@ -46,10 +46,12 @@ app.post("/flush", async (_req, res) => {
 app.listen(config.port, () => {
     flush();
 
+    console.info(chalk.bold.keyword("orange")("🎥 VIDEO MERGER"));
     Object.entries(config).forEach(([key, value]) => {
         const paddedKey = _.padEnd(key, 25, " ");
         console.info(chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`));
     });
+    console.info();
 });
 
 app.use(errorHandler);
