@@ -36,6 +36,11 @@ app.post("/create", (_req, res) => {
     return res.send({ id: mergerId });
 });
 
+app.post("/flush", async (_req, res) => {
+    flush();
+    return res.sendStatus(200);
+});
+
 app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
     const { id } = req.params;
     const files = req.files! as Express.Multer.File[];
@@ -47,11 +52,6 @@ app.post("/:id", async (req: Request<{ id: string }>, res) => {
     const { id } = req.params;
     const output = await mergerService.merge(id);
     return res.sendFile(output);
-});
-
-app.post("/flush", async (_req, res) => {
-    flush();
-    return res.sendStatus(200);
 });
 
 app.listen(config.port, () => {
