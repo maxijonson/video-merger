@@ -1,6 +1,6 @@
 import { RequestHandler } from "express-serve-static-core";
 import _ from "lodash";
-import { FILES_FIELD } from "../config/constants";
+import { FIELD_FILES } from "../config/constants";
 import ConfigService from "../services/ConfigService/ConfigService";
 import upload from "./upload";
 import validateFiles from "./validateFiles";
@@ -9,7 +9,7 @@ const config = ConfigService.instance.getConfig();
 
 // Compose 'upload' and 'validateFiles' middlewares
 const uploadMany: RequestHandler = (req, _res, next) => {
-    return upload.array(FILES_FIELD, config.maxFileUploadCount)(
+    return upload.array(FIELD_FILES, config.maxFileUploadCount)(
         req,
         _res,
         (err) => {

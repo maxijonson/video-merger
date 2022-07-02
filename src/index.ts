@@ -1,4 +1,4 @@
-import express, { Request } from "express";
+import express, { Request, Response } from "express";
 import _ from "lodash";
 import chalk from "chalk";
 import "./config/config";
@@ -9,6 +9,7 @@ import MergerService from "./services/MergerService/MergerService";
 import ConfigService from "./services/ConfigService/ConfigService";
 import errorHandler from "./middleware/errorHandler";
 import uploadMany from "./middleware/uploadMany";
+import parseDate from "./utils/parseDate";
 
 const app = express();
 const mergerService = MergerService.instance;
@@ -20,16 +21,23 @@ app.get("/", (_req, res) => {
     return res.sendStatus(200);
 });
 
-app.post("/", uploadMany, async (req, res) => {
-    const files = req.files! as Express.Multer.File[];
+app.post(
+    "/",
+    uploadMany,
+    async (req: Request<{}, {}, { creationDate: string }>, res: Response) => {
+        const files = req.files! as Express.Multer.File[];
 
-    const mergerId = mergerService.create();
-    mergerService.append(mergerId, ...files);
+        const mergerId = mergerService.create();
+        mergerService.append(mergerId, ...files);
 
-    const output = await mergerService.merge(mergerId);
+        const output = await mergerService.merge(
+            mergerId,
+            parseDate(req.body.creationDate)
+        );
 
-    return res.sendFile(output);
-});
+        return res.sendFile(output);
+    }
+);
 
 app.post("/create", (_req, res) => {
     const mergerId = mergerService.create();
@@ -48,11 +56,19 @@ app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
     return res.sendStatus(200);
 });
 
-app.post("/:id", async (req: Request<{ id: string }>, res) => {
-    const { id } = req.params;
-    const output = await mergerService.merge(id);
-    return res.sendFile(output);
-});
+app.post(
+    "/:id",
+    async (req: Request<{ id: string }, {}, { creationDate: string }>, res) => {
+        const { id } = req.params;
+
+        const output = await mergerService.merge(
+            id,
+            parseDate(req.body.creationDate)
+        );
+
+        return res.sendFile(output);
+    }
+);
 
 app.listen(config.port, () => {
     flush();

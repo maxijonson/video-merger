@@ -1,7 +1,9 @@
 import path from "path";
 
-export const TMP_DIR = path.join(__dirname, "..", "tmp");
-export const UPLOADS_DIR = path.join(TMP_DIR, "uploads");
-export const OUTPUTS_DIR = path.join(TMP_DIR, "outputs");
-export const INPUTS_DIR = path.join(TMP_DIR, "inputs");
-export const FILES_FIELD = "files";
+export const DIR_TMP = path.join(__dirname, "..", "tmp");
+export const DIR_UPLOADS = path.join(DIR_TMP, "uploads");
+export const DIR_OUTPUTS = path.join(DIR_TMP, "outputs");
+export const DIR_INPUTS = path.join(DIR_TMP, "inputs");
+
+export const FIELD_FILES = "files";
+export const FIELD_CREATION_DATE = "creationDate";

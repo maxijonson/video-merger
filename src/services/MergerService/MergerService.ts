@@ -46,12 +46,15 @@ class MergerService {
         merger.append(...files);
     }
 
-    public merge(mergerId: string) {
+    public merge(
+        mergerId: string,
+        creationDate: Date = new Date()
+    ): Promise<string> {
         const merger = this.mergers[mergerId];
         if (!merger) {
             throw new MergerNotFoundFault();
         }
-        return merger.merge();
+        return merger.merge(creationDate);
     }
 }
 
