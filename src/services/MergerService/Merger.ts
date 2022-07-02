@@ -3,8 +3,7 @@ import { exec } from "child_process";
 import path from "path";
 import { v4 as uuid } from "uuid";
 import chalk from "chalk";
-import createFfmpegCommand from "../../utils/createFfmpegCommand";
-import { OUTPUTS_DIR } from "../../config/constants";
+import { INPUTS_DIR, OUTPUTS_DIR } from "../../config/constants";
 import ConfigService from "../ConfigService/ConfigService";
 import MergerMaxFileCountFault from "../../errors/MergerMaxFileCountFault";
 import MergerMaxFileSizeFault from "../../errors/MergerMaxFileSizeFault";
@@ -40,31 +39,38 @@ class Merger {
         });
     }
 
-    public async merge() {
+    public async merge(): Promise<string> {
         if (this.output) return this.output;
 
         const filePaths = this.inputFiles.map((f) => f.path);
-        const outputFilePath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
+        const outputPath = path.join(OUTPUTS_DIR, `${uuid()}.mp4`);
+        const inputsPath = path.join(INPUTS_DIR, `${uuid()}.txt`);
+        const inputs = filePaths.map((f) => `file '${f}'`).join("\n");
+        const command = `ffmpeg -f concat -safe 0 -i ${inputsPath} -c copy ${outputPath}`;
 
         this.log(`merge ${this.id}: Merging ${filePaths.length} files`);
 
+        await fs.outputFile(inputsPath, inputs);
+
         try {
             this.output = await new Promise<string>((resolve, reject) => {
-                exec(
-                    createFfmpegCommand(filePaths, outputFilePath),
-                    async (err) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        return resolve(outputFilePath);
+                exec(command, async (err) => {
+                    if (err) {
+                        return reject(err);
                     }
-                );
+                    return resolve(outputPath);
+                });
             });
         } catch (err) {
             if (err instanceof Error) {
                 console.error(chalk.red(err.message));
                 console.error(chalk.red(err.stack));
             }
+        }
+
+        await fs.remove(inputsPath);
+
+        if (!this.output) {
             throw new MergeFault();
         }
 
