@@ -4,13 +4,13 @@ import UploadEmptyFault from "../errors/UploadEmptyFault";
 import UploadInvalidStructureFault from "../errors/UploadInvalidStructureFault";
 
 const validateFiles: RequestHandler = (req, _res, next) => {
-    if (!req.files) throw new UploadEmptyFault();
+    if (!req.files) return next(new UploadEmptyFault());
 
     const { files } = req;
 
-    if (!files) throw new UploadEmptyFault();
-    if (!_.isArray(files)) throw new UploadInvalidStructureFault();
-    if (files.length === 0) throw new UploadEmptyFault();
+    if (!files) return next(new UploadEmptyFault());
+    if (!_.isArray(files)) return next(new UploadInvalidStructureFault());
+    if (files.length === 0) return next(new UploadEmptyFault());
 
     return next();
 };

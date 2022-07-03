@@ -1,7 +1,7 @@
 import moment from "moment";
 import CreationDateInvalidFault from "../errors/CreationDateInvalidFault";
 
-const parseDate = (str: string) => {
+const parseDate = (str: string | undefined) => {
     if (!str) return new Date();
 
     const m = moment(str);

@@ -15,7 +15,7 @@ const app = express();
 const mergerService = MergerService.instance;
 const config = ConfigService.instance.getConfig();
 
-app.use(authenticate, logRequest);
+app.use(express.json(), authenticate, logRequest);
 
 app.get("/", (_req, res) => {
     return res.sendStatus(200);
@@ -24,7 +24,7 @@ app.get("/", (_req, res) => {
 app.post(
     "/",
     uploadMany,
-    async (req: Request<{}, {}, { creationDate: string }>, res: Response) => {
+    async (req: Request<{}, {}, { creationDate?: string }>, res: Response) => {
         const files = req.files! as Express.Multer.File[];
 
         const mergerId = mergerService.create();
@@ -58,7 +58,10 @@ app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
 
 app.post(
     "/:id",
-    async (req: Request<{ id: string }, {}, { creationDate: string }>, res) => {
+    async (
+        req: Request<{ id: string }, {}, { creationDate?: string }>,
+        res
+    ) => {
         const { id } = req.params;
 
         const output = await mergerService.merge(
