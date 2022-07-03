@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import _ from "lodash";
 import chalk from "chalk";
+import "dotenv/config";
 import "./config/config";
 import authenticate from "./middleware/authenticate";
 import logRequest from "./middleware/logRequest";
