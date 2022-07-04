@@ -3,7 +3,6 @@
     "version": "1.0.0",
     "description": "",
     "main": "dist/cjs/index.js",
-    "module": "dist/esm/index.js",
     "types": "dist/@types/index.d.ts",
     "scripts": {
         "start": "pm2-runtime start ecosystem.config.js --env production",
@@ -11,16 +10,13 @@
         "prod": "npm run build && npm run start",
         "watch": "nodemon",
         "clean": "rm -rf dist",
-        "build": "npm-run-all clean build:esm build:cjs build:types",
+        "build": "npm-run-all clean build:cjs",
         "build:cjs": "tsc -p tsconfig.prod.json --module CommonJS --outDir dist/cjs && cp .build/package.cjs.json dist/cjs/package.json",
-        "build:esm": "tsc -p tsconfig.prod.json && cp .build/package.esm.json dist/esm/package.json",
-        "build:types": "tsc -p tsconfig.prod.json --declaration --declarationMap --emitDeclarationOnly --declarationDir dist/@types",
         "reinstall": "npm run clean && rm -rf node_modules package-lock.json && npm install"
     },
     "exports": {
         ".": {
-            "import": "./dist/cjs/index.js",
-            "export": "./dist/esm/index.js"
+            "import": "./dist/cjs/index.js"
         }
     },
     "repository": {
