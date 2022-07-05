@@ -5,7 +5,7 @@ import Merger from "./Merger";
 import ConfigService from "../ConfigService/ConfigService";
 import MergerNotFoundFault from "../../errors/MergerNotFoundFault";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 class MergerService {
     // eslint-disable-next-line no-use-before-define
@@ -58,4 +58,4 @@ class MergerService {
     }
 }
 
-export default MergerService;
+export default MergerService.instance;

@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { RequestHandler } from "express";
 import ConfigService from "../services/ConfigService/ConfigService";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 const logRequest: RequestHandler = (req, _res, next) => {
     if (!config.requestLogging) return next();

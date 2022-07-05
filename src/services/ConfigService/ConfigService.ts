@@ -59,4 +59,4 @@ class ConfigService {
     }
 }
 
-export default ConfigService;
+export default ConfigService.instance;

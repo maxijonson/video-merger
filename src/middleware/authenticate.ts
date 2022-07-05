@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import ConfigService from "../services/ConfigService/ConfigService";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 /**
  * It goes without saying this is a very insecure way to do it, but it's a

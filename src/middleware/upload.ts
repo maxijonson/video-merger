@@ -2,7 +2,7 @@ import multer from "multer";
 import { DIR_UPLOADS } from "../config/constants";
 import ConfigService from "../services/ConfigService/ConfigService";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 const upload = multer({
     dest: DIR_UPLOADS,

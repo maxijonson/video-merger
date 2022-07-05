@@ -10,7 +10,7 @@ import MergeFault from "../../errors/MergeFault";
 import ffmpegDate from "../../utils/ffmpegDate";
 import execAsync from "../../utils/execAsync";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 class Merger {
     private inputFiles: Express.Multer.File[] = [];

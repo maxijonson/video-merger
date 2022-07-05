@@ -5,7 +5,7 @@ import ConfigService from "../services/ConfigService/ConfigService";
 import upload from "./upload";
 import validateFiles from "./validateFiles";
 
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 // Compose 'upload' and 'validateFiles' middlewares
 const uploadMany: RequestHandler = (req, _res, next) => {

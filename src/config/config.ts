@@ -46,8 +46,7 @@ declare global {
 }
 
 // Edit default values here.
-ConfigService.instance
-    .addConfig("port", "PORT", 3000)
+ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("password", "PASSWORD", "letmein")
     .addConfig("usePassword", "USE_PASSWORD", true)
     .addConfig("maxFileUploadCount", "MAX_FILE_UPLOAD_COUNT", 10)

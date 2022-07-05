@@ -6,15 +6,14 @@ import "./config/config";
 import authenticate from "./middleware/authenticate";
 import logRequest from "./middleware/logRequest";
 import flush from "./utils/flush";
-import MergerService from "./services/MergerService/MergerService";
 import ConfigService from "./services/ConfigService/ConfigService";
 import errorHandler from "./middleware/errorHandler";
 import uploadMany from "./middleware/uploadMany";
 import parseDate from "./utils/parseDate";
+import MergerService from "./services/MergerService/MergerService";
 
 const app = express();
-const mergerService = MergerService.instance;
-const config = ConfigService.instance.getConfig();
+const config = ConfigService.getConfig();
 
 app.use(express.json(), authenticate, logRequest);
 
@@ -28,10 +27,10 @@ app.post(
     async (req: Request<{}, {}, { creationDate?: string }>, res: Response) => {
         const files = req.files! as Express.Multer.File[];
 
-        const mergerId = mergerService.create();
-        mergerService.append(mergerId, ...files);
+        const mergerId = MergerService.create();
+        MergerService.append(mergerId, ...files);
 
-        const output = await mergerService.merge(
+        const output = await MergerService.merge(
             mergerId,
             parseDate(req.body.creationDate)
         );
@@ -41,7 +40,7 @@ app.post(
 );
 
 app.post("/create", (_req, res) => {
-    const mergerId = mergerService.create();
+    const mergerId = MergerService.create();
     return res.send({ id: mergerId });
 });
 
@@ -53,7 +52,7 @@ app.post("/flush", async (_req, res) => {
 app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
     const { id } = req.params;
     const files = req.files! as Express.Multer.File[];
-    mergerService.append(id, ...files);
+    MergerService.append(id, ...files);
     return res.sendStatus(200);
 });
 
@@ -65,7 +64,7 @@ app.post(
     ) => {
         const { id } = req.params;
 
-        const output = await mergerService.merge(
+        const output = await MergerService.merge(
             id,
             parseDate(req.body.creationDate)
         );
