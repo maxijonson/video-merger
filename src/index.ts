@@ -11,6 +11,7 @@ import errorHandler from "./middleware/errorHandler";
 import uploadMany from "./middleware/uploadMany";
 import parseDate from "./utils/parseDate";
 import MergerService from "./services/MergerService/MergerService";
+import DatabaseService from "./services/DatabaseService/DatabaseService";
 
 const app = express();
 const config = ConfigService.getConfig();
@@ -27,8 +28,8 @@ app.post(
     async (req: Request<{}, {}, { creationDate?: string }>, res: Response) => {
         const files = req.files! as Express.Multer.File[];
 
-        const mergerId = MergerService.create();
-        MergerService.append(mergerId, ...files);
+        const mergerId = await MergerService.create();
+        await MergerService.append(mergerId, ...files);
 
         const output = await MergerService.merge(
             mergerId,
@@ -39,8 +40,8 @@ app.post(
     }
 );
 
-app.post("/create", (_req, res) => {
-    const mergerId = MergerService.create();
+app.post("/create", async (_req, res) => {
+    const mergerId = await MergerService.create();
     return res.send({ id: mergerId });
 });
 
@@ -49,10 +50,10 @@ app.post("/flush", async (_req, res) => {
     return res.sendStatus(200);
 });
 
-app.post("/add/:id", uploadMany, (req: Request<{ id: string }>, res) => {
+app.post("/add/:id", uploadMany, async (req: Request<{ id: string }>, res) => {
     const { id } = req.params;
     const files = req.files! as Express.Multer.File[];
-    MergerService.append(id, ...files);
+    await MergerService.append(id, ...files);
     return res.sendStatus(200);
 });
 
@@ -73,15 +74,17 @@ app.post(
     }
 );
 
-app.listen(config.port, () => {
-    flush();
-
-    console.info(chalk.bold.keyword("orange")("🎥 VIDEO MERGER"));
-    Object.entries(config).forEach(([key, value]) => {
-        const paddedKey = _.padEnd(key, 25, " ");
-        console.info(chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`));
-    });
-    console.info();
-});
-
 app.use(errorHandler);
+
+DatabaseService.onReady(() => {
+    app.listen(config.port, () => {
+        flush();
+
+        console.info(chalk.bold.keyword("orange")("🎥 VIDEO MERGER"));
+        Object.entries(config).forEach(([key, value]) => {
+            const paddedKey = _.padEnd(key, 25, " ");
+            console.info(chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`));
+        });
+        console.info();
+    });
+});
