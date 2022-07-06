@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import _ from "lodash";
 import chalk from "chalk";
 import "dotenv/config";
-import "./config/config.ts";
+import "./config/config";
 import authenticate from "./middleware/authenticate";
 import logRequest from "./middleware/logRequest";
 import flush from "./utils/flush";

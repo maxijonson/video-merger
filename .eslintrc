@@ -17,7 +17,7 @@
     "plugins": ["@typescript-eslint", "prettier"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "project": "./tsconfig.cjs.json",
+        "project": "./tsconfig.esm.json",
         "sourceType": "module",
         "tsconfigRootDir": "./",
         "extraFileExtensions": [".json"],
