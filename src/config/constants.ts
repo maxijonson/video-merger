@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const DIR_ROOT = path.join(__dirname, "..", "..");
-export const DIR_TMP = path.join(DIR_ROOT, "tmp");
+export const DIR_TMP = path.join(DIR_ROOT, "src", "tmp");
 export const DIR_UPLOADS = path.join(DIR_TMP, "uploads");
 export const DIR_OUTPUTS = path.join(DIR_TMP, "outputs");
 export const DIR_INPUTS = path.join(DIR_TMP, "inputs");
