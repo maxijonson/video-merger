@@ -1,3 +1,4 @@
+import fs from "fs-extra";
 import { Low, JSONFile } from "lowdb";
 import path from "path";
 import { DIR_DATA } from "../../../config/constants";
@@ -9,6 +10,7 @@ class FSAdapter extends Adapter {
 
     constructor() {
         super();
+        fs.mkdirSync(DIR_DATA, { recursive: true });
         const adapter = new JSONFile(path.join(DIR_DATA, "db.json"));
         this.db = new Low(adapter);
     }

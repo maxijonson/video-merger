@@ -1,7 +1,43 @@
 /* eslint-disable no-underscore-dangle */
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface Config {}
+    interface Config {
+        /** Port number of the app. Leave as-is for Heroku. */
+        port: number;
+
+        /** Password that should be used in 'Authorization' header */
+        password: string;
+
+        /** Whether or not to authenticate routes with a password */
+        usePassword: boolean;
+
+        /** Maximum amount of files that can be uploaded at once */
+        maxFileUploadCount: number;
+
+        /** Maximum file size of individual file uploaded (total would be maxFileUploadSize * maxFileUploadCount) */
+        maxFileUploadSize: number;
+
+        /** Maximum total files a merger can hold */
+        maxMergerFileCount: number;
+
+        /** Maximum total size a merger can hold */
+        maxMergerFileSize: number;
+
+        /**
+         * Delay before:
+         * - A merger's associated files (input and output) are deleted to free storage
+         * - A merger is deleted to free memory
+         *
+         * Adjust this depending on how long you want to allow users to prepare a merger and then merge it.
+         */
+        cleanupMergersDelay: number;
+
+        /** Enable request logging */
+        requestLogging: boolean;
+
+        /** Enable merger logging */
+        mergerLogging: boolean;
+    }
 }
 
 class ConfigService {
