@@ -36,6 +36,14 @@ interface Config {
 
     /** Enable merger logging */
     mergerLogging: boolean;
+
+    /**
+     * Which database adapter to use.
+     *
+     * Possible values:
+     * - `fs` - Uses a JSON file system to store data with LowDB.
+     */
+    dbAdapter: "fs";
 }
 
 class ConfigService {

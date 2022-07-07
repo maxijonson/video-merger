@@ -12,4 +12,5 @@ ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("maxMergerFileSize", "MAX_MERGER_FILE_SIZE", 100 * MB)
     .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45)
     .addConfig("requestLogging", "REQUEST_LOGGING", true)
-    .addConfig("mergerLogging", "MERGER_LOGGING", true);
+    .addConfig("mergerLogging", "MERGER_LOGGING", true)
+    .addConfig("dbAdapter", "DB_ADAPTER", "fs");

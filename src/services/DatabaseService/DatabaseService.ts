@@ -1,7 +1,10 @@
+import ConfigService from "../ConfigService/ConfigService";
 import Adapter from "./Adapters/Adapter";
 import FSAdapter from "./Adapters/FSAdapter";
 import Database from "./Database/Database";
 import Model from "./Models/Model";
+
+const config = ConfigService.getConfig();
 
 class DatabaseService {
     // eslint-disable-next-line no-use-before-define
@@ -13,7 +16,14 @@ class DatabaseService {
     public adapter: Adapter;
 
     private constructor() {
-        this.adapter = new FSAdapter();
+        switch (config.dbAdapter) {
+            case "fs":
+                this.adapter = new FSAdapter();
+                break;
+            default:
+                throw new Error(`Unknown db adapter: ${config.dbAdapter}`);
+        }
+
         const p = this.adapter.init();
 
         if (p instanceof Promise) {
