@@ -12,11 +12,12 @@ import uploadMany from "./middleware/uploadMany";
 import parseDate from "./utils/parseDate";
 import MergerService from "./services/MergerService/MergerService";
 import DatabaseService from "./services/DatabaseService/DatabaseService";
+import prepareRequestBody from "./middleware/prepareRequestBody";
 
 const app = express();
 const config = ConfigService.getConfig();
 
-app.use(express.json(), authenticate, logRequest);
+app.use(prepareRequestBody, authenticate, logRequest);
 
 app.get("/", (_req, res) => {
     return res.sendStatus(200);

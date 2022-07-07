@@ -7,7 +7,6 @@ import validateFiles from "./validateFiles";
 
 const config = ConfigService.getConfig();
 
-// Compose 'upload' and 'validateFiles' middlewares
 const uploadMany: RequestHandler = (req, _res, next) => {
     return upload.array(FIELD_FILES, config.maxFileUploadCount)(
         req,

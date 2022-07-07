@@ -13,3 +13,5 @@ export const DIR_DATA = path.join(DIR_TMP, "data");
 
 export const FIELD_FILES = "files";
 export const FIELD_CREATION_DATE = "creationDate";
+
+export const DB_MERGERS = "mergers";

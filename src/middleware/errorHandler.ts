@@ -1,9 +1,17 @@
 import chalk from "chalk";
+import fs from "fs-extra";
 import { ErrorRequestHandler } from "express";
 import { MulterError } from "multer";
 import Fault from "../errors/Fault";
 
-const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+    if (req.files) {
+        const files = req.files as Express.Multer.File[];
+        files.forEach((file) => {
+            fs.remove(file.path);
+        });
+    }
+
     if (err instanceof Fault) {
         return res.status(err.httpCode).send({
             code: err.httpCode,
