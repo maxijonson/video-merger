@@ -73,6 +73,7 @@
             }
         ],
         "no-restricted-exports": "off",
+        "no-restricted-syntax":"off",
         "spaced-comment": [
             "warn",
             "always",

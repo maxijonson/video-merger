@@ -37,7 +37,7 @@ app.post(
             parseDate(req.body.creationDate)
         );
 
-        return res.sendFile(output);
+        return res.sendFile(output.path);
     }
 );
 
@@ -71,7 +71,7 @@ app.post(
             parseDate(req.body.creationDate)
         );
 
-        return res.sendFile(output);
+        return res.sendFile(output.path);
     }
 );
 

@@ -7,13 +7,17 @@ import chalk from "chalk";
 import ConfigService from "../ConfigService/ConfigService";
 import MergerNotFoundFault from "../../errors/MergerNotFoundFault";
 import DatabaseService from "../DatabaseService/DatabaseService";
-import MergerModel from "../DatabaseService/Models/MergerModel";
+import MergerModel, { MergerFile } from "../DatabaseService/Models/MergerModel";
 import { DIR_OUTPUTS, DIR_INPUTS, DB_MERGERS } from "../../config/constants";
 import MergeFault from "../../errors/MergeFault";
 import execAsync from "../../utils/execAsync";
 import ffmpegDate from "../../utils/ffmpegDate";
 import MergerAlreadyExistsFault from "../../errors/MergerAlreadyExistsFault";
 import normalizePath from "../../utils/normalizePath";
+import MergerMaxFileSizeFault from "../../errors/MergerMaxFileSizeFault";
+import MergerMaxFileCountFault from "../../errors/MergerMaxFileCountFault";
+import Fault from "../../errors/Fault";
+import AddFilesFault from "../../errors/AddFilesFault";
 
 const config = ConfigService.getConfig();
 
@@ -47,55 +51,75 @@ class MergerService {
     }
 
     public async append(mergerId: string, ...files: Express.Multer.File[]) {
-        const exists = await this.db.has(mergerId);
+        const merger = await this.db.get(mergerId);
+        let err: any | null = null;
 
-        if (!exists) throw new MergerNotFoundFault();
+        if (!merger) throw new MergerNotFoundFault();
 
-        const intermediatePaths = await Promise.all(
-            files
-                .map((f) => normalizePath(f.path))
-                .map(async (filePath) => {
-                    const intermediatePath = normalizePath(
-                        path.join(DIR_INPUTS, uuid())
-                    );
-                    const command = `ffmpeg -i "${filePath}" -c copy -bsf:v h264_mp4toannexb -f mpegts ${intermediatePath}`;
-                    await execAsync(command);
-                    await fs.remove(filePath);
-                    return intermediatePath;
-                })
-        );
+        try {
+            for await (const file of files) {
+                const remainingSize = merger.getRemainingSize();
+                const remainingCount = merger.getRemainingFilesCount();
 
-        await this.db.update(mergerId, (merger) => {
-            merger.addFiles(...intermediatePaths);
-        });
+                if (remainingCount < 1) {
+                    throw new MergerMaxFileCountFault();
+                }
+                if (remainingSize < file.size) {
+                    throw new MergerMaxFileSizeFault();
+                }
+
+                const intermediateFile = await this.createIntermediateFile(
+                    file.path,
+                    remainingSize
+                );
+
+                // Recheck max file size and delete the intermediate file if it's too big.
+                // We use <= instead of <, because FFMPEG only LIMITS the size of the file, it does not throw an error if it is bigger.
+                // If the intermediate file size is the same as the remaining size, it most likely means the file was too big.
+                if (remainingSize <= intermediateFile.size) {
+                    await fs.remove(intermediateFile.path);
+                    throw new MergerMaxFileSizeFault();
+                }
+
+                await merger.addFiles(intermediateFile);
+            }
+        } catch (e) {
+            if (e instanceof Fault) {
+                err = e;
+            } else {
+                err = new AddFilesFault();
+            }
+        }
+
+        await Promise.all(files.map((f) => fs.remove(f.path)));
+        await this.db.update(merger.id, merger);
+
+        if (err) {
+            throw err;
+        }
     }
 
     public async merge(
         mergerId: string,
         creationDate: Date = new Date()
-    ): Promise<string> {
+    ): Promise<MergerFile> {
         const merger = await this.db.get(mergerId);
         if (!merger) {
             throw new MergerNotFoundFault();
         }
 
-        let output = merger.getOutput();
+        const existingOutput = merger.getOutput();
+        if (existingOutput) return existingOutput;
 
-        if (output) return output;
-
-        const outputPath = path.join(DIR_OUTPUTS, `${uuid()}.mp4`);
         const files = merger.getFiles();
-        const ffmpegCommand = await this.createFfmpegCommand(
-            files,
-            creationDate,
-            outputPath
-        );
-
-        this.log(`merge ${merger.id}: Merging ${files.length} files`);
+        let outputFile: MergerFile | null = null;
 
         try {
-            await execAsync(ffmpegCommand);
-            output = outputPath;
+            this.log(`merge ${merger.id}: Merging ${files.length} files`);
+            outputFile = await this.createMergedFile(
+                files.map((f) => f.path),
+                creationDate
+            );
         } catch (err) {
             if (err instanceof Error) {
                 console.error(chalk.red(err.message));
@@ -103,26 +127,18 @@ class MergerService {
             }
         }
 
-        if (output === null) {
+        if (!outputFile) {
             throw new MergeFault();
         }
 
-        this.log(`merge ${merger.id}: Merged to ${output}`);
-
-        merger.setOutput(output);
+        await merger.setOutput(outputFile);
         await this.db.update(merger.id, merger);
-        return output;
-    }
 
-    private async createFfmpegCommand(
-        inputPaths: string[],
-        creationDate: Date,
-        outputPath: string
-    ): Promise<string> {
-        const creationTime = ffmpegDate(creationDate);
-        const input = inputPaths.join("|");
+        this.log(
+            `merge ${merger.id}: Merged to ${outputFile.path} (${outputFile.size} bytes)`
+        );
 
-        return `ffmpeg -i "concat:${input}" -metadata creation_time="${creationTime}" -c copy -bsf:a aac_adtstoasc ${outputPath}`;
+        return outputFile;
     }
 
     private log(...message: string[]) {
@@ -144,10 +160,38 @@ class MergerService {
 
         schedule.cancelJob(this.getMergerScheduleId(merger.id));
         await this.db.delete(merger.id);
+        await merger.dispose();
+    }
 
-        const mergerFiles = [...merger.getFiles(), merger.getOutput()];
+    private async createIntermediateFile(
+        inputFilePath: string,
+        maxSize: number
+    ): Promise<MergerFile> {
+        const intermediatePath = normalizePath(path.join(DIR_INPUTS, uuid()));
+        const command = `ffmpeg -i "${inputFilePath}" -fs ${maxSize}B -c copy -bsf:v h264_mp4toannexb -f mpegts ${intermediatePath}`;
 
-        await Promise.all(mergerFiles.map((f) => f && fs.remove(f)));
+        await execAsync(command);
+
+        const { size } = await fs.stat(intermediatePath);
+        return { path: intermediatePath, size };
+    }
+
+    private async createMergedFile(
+        inputPaths: string[],
+        creationDate = new Date()
+    ): Promise<MergerFile> {
+        const outputPath = normalizePath(
+            path.join(DIR_OUTPUTS, `${uuid()}.mp4`)
+        );
+        const creationTime = ffmpegDate(creationDate);
+        const input = inputPaths.join("|");
+        const ffmpegCommand = `ffmpeg -i "concat:${input}" -metadata creation_time="${creationTime}" -c copy -bsf:a aac_adtstoasc ${outputPath}`;
+
+        await execAsync(ffmpegCommand);
+
+        const { size } = await fs.stat(outputPath);
+
+        return { path: outputPath, size };
     }
 }
 
