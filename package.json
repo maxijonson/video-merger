@@ -7,7 +7,7 @@
     "types": "dist/@types/index.d.ts",
     "type": "module",
     "scripts": {
-        "start": "pm2-runtime start ecosystem.config.cjs --env production",
+        "start": "pm2-runtime start ecosystem.config.json --env production",
         "dev": "ts-node -P tsconfig.esm.json src/index.ts",
         "prod": "npm run build && npm run start",
         "watch": "nodemon",
