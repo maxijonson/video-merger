@@ -10,8 +10,9 @@ import ConfigService from "./services/ConfigService/ConfigService";
 import errorHandler from "./middleware/errorHandler";
 import uploadMany from "./middleware/uploadMany";
 import MergerService from "./services/MergerService/MergerService";
-import DatabaseService from "./services/DatabaseService/DatabaseService";
 import prepareRequestBody from "./middleware/prepareRequestBody";
+import Service from "./services/Service/Service";
+import ServiceLoadingFault from "./errors/ServiceLoadingFault";
 
 const app = express();
 const config = ConfigService.getConfig();
@@ -64,15 +65,31 @@ app.post(
 
 app.use(errorHandler);
 
-DatabaseService.onReady(() => {
-    app.listen(config.port, () => {
-        flush();
+Service.onReady((serviceId) => {
+    console.info(chalk.green(`✅ ${serviceId} ready.`));
+})
+    .onAllReady(() => {
+        console.info(chalk.green("✅ All services ready!"));
 
-        console.info(chalk.bold.keyword("orange")("🎥 VIDEO MERGER"));
-        Object.entries(config).forEach(([key, value]) => {
-            const paddedKey = _.padEnd(key, 25, " ");
-            console.info(chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`));
+        app.listen(config.port, () => {
+            flush();
+
+            console.info(chalk.bold.keyword("orange")("🎥 VIDEO MERGER"));
+            Object.entries(config).forEach(([key, value]) => {
+                const paddedKey = _.padEnd(key, 25, " ");
+                console.info(
+                    chalk.keyword("orange")(`🔧 ${paddedKey}: ${value}`)
+                );
+            });
+            console.info();
         });
-        console.info();
+    })
+    .onError((serviceId, error) => {
+        if (error instanceof ServiceLoadingFault) {
+            console.error(chalk.keyword("red")(`🔥 ${serviceId}`));
+            console.error(chalk.keyword("red")(error.message));
+            console.error(chalk.keyword("red")(error.stack));
+            console.error();
+            process.exit(1);
+        }
     });
-});

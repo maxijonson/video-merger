@@ -18,19 +18,29 @@ import MergerMaxFileSizeFault from "../../errors/MergerMaxFileSizeFault";
 import MergerMaxFileCountFault from "../../errors/MergerMaxFileCountFault";
 import Fault from "../../errors/Fault";
 import AddFilesFault from "../../errors/AddFilesFault";
+import Database from "../DatabaseService/Database/Database";
+import Service from "../Service/Service";
 
 const config = ConfigService.getConfig();
 const orange = chalk.keyword("orange");
 
 const BtoM = (b: number) => (b / 1024 / 1024).toFixed(2);
 
-class MergerService {
+class MergerService extends Service {
     // eslint-disable-next-line no-use-before-define
     private static serviceInstance: MergerService;
 
-    private db = DatabaseService.getDatabase<MergerModel>(DB_MERGERS);
+    private db!: Database<MergerModel>;
 
-    private constructor() {}
+    private constructor() {
+        super("Merger Service");
+        DatabaseService.onReady(() => {
+            this.db = DatabaseService.getDatabase<MergerModel>(DB_MERGERS);
+            this.notifyReady();
+        }).onError((error) => {
+            this.notifyError(error);
+        });
+    }
 
     public static get instance(): MergerService {
         if (!MergerService.serviceInstance) {

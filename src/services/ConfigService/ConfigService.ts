@@ -1,4 +1,7 @@
 // Do not use type unions, because the ConfigService casts process.env entries based on the type of the default value.
+
+import Service from "../Service/Service";
+
 // If you use a type union (e.g. string | number) and use a number as default value the ConfigService will cast the process.env entry to a number. Hence, the type string will NEVER be used.
 interface Config {
     /** Port number of the app. Leave as-is for Heroku. */
@@ -51,14 +54,17 @@ interface Config {
     mergerLogging: boolean;
 }
 
-class ConfigService {
+class ConfigService extends Service {
     // eslint-disable-next-line no-use-before-define
     private static serviceInstance: ConfigService;
 
     // Should eventually be a full config object with the use of addConfig
     private config: Config = {} as Config;
 
-    private constructor() {}
+    private constructor() {
+        super("Config Service");
+        this.notifyReady();
+    }
 
     public static get instance(): ConfigService {
         if (!ConfigService.serviceInstance) {
