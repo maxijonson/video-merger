@@ -2,6 +2,8 @@ import ConfigService from "../services/ConfigService/ConfigService";
 
 const KB = 1024;
 const MB = KB * KB;
+// const GB = MB * KB;
+// const TB = MB * MB;
 
 ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("password", "PASSWORD", "letmein")
@@ -13,4 +15,5 @@ ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45)
     .addConfig("requestLogging", "REQUEST_LOGGING", true)
     .addConfig("mergerLogging", "MERGER_LOGGING", true)
-    .addConfig("dbAdapter", "DB_ADAPTER", "fs");
+    .addConfig("dbAdapter", "DB_ADAPTER", "fs")
+    .addConfig("cleanAfterMerge", "CLEAN_AFTER_MERGE", true);

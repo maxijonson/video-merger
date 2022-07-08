@@ -9,7 +9,6 @@ import flush from "./utils/flush";
 import ConfigService from "./services/ConfigService/ConfigService";
 import errorHandler from "./middleware/errorHandler";
 import uploadMany from "./middleware/uploadMany";
-import parseDate from "./utils/parseDate";
 import MergerService from "./services/MergerService/MergerService";
 import DatabaseService from "./services/DatabaseService/DatabaseService";
 import prepareRequestBody from "./middleware/prepareRequestBody";
@@ -31,13 +30,7 @@ app.post(
 
         const mergerId = await MergerService.create();
         await MergerService.append(mergerId, ...files);
-
-        const output = await MergerService.merge(
-            mergerId,
-            parseDate(req.body.creationDate)
-        );
-
-        return res.sendFile(output.path);
+        await MergerService.sendMergedFile(mergerId, res);
     }
 );
 
@@ -65,13 +58,7 @@ app.post(
         res
     ) => {
         const { id } = req.params;
-
-        const output = await MergerService.merge(
-            id,
-            parseDate(req.body.creationDate)
-        );
-
-        return res.sendFile(output.path);
+        await MergerService.sendMergedFile(id, res);
     }
 );
 

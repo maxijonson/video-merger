@@ -31,11 +31,10 @@ interface Config {
      */
     cleanupMergersDelay: number;
 
-    /** Enable request logging */
-    requestLogging: boolean;
-
-    /** Enable merger logging */
-    mergerLogging: boolean;
+    /**
+     * Whether or not to clean up the merger immediately after sending a merged video, instead of waiting for `cleanuptMergersDelay`.
+     */
+    cleanAfterMerge: boolean;
 
     /**
      * Which database adapter to use.
@@ -44,6 +43,12 @@ interface Config {
      * - `fs` - Uses a JSON file system to store data with LowDB.
      */
     dbAdapter: "fs";
+
+    /** Enable request logging */
+    requestLogging: boolean;
+
+    /** Enable merger logging */
+    mergerLogging: boolean;
 }
 
 class ConfigService {

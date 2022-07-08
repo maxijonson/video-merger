@@ -1,3 +1,4 @@
+import { Response } from "express";
 import { v4 as uuid } from "uuid";
 import fs from "fs-extra";
 import path from "path";
@@ -108,17 +109,47 @@ class MergerService {
         }
     }
 
-    public async merge(
+    public async sendMergedFile(
+        mergerId: string,
+        res: Response,
+        creationDate = new Date()
+    ) {
+        const merger = await this.db.get(mergerId);
+        if (!merger) {
+            throw new MergerNotFoundFault();
+        }
+
+        let output = merger.getOutput();
+        if (!output) {
+            await this.merge(mergerId, creationDate);
+            output = merger.getOutput();
+
+            if (!output) {
+                throw new MergeFault();
+            }
+        }
+
+        res.sendFile(output.path, (err) => {
+            if (err) {
+                throw new MergeFault();
+            }
+            if (config.cleanAfterMerge) {
+                this.deleteMerger(mergerId);
+            }
+        });
+    }
+
+    private async merge(
         mergerId: string,
         creationDate: Date = new Date()
-    ): Promise<MergerFile> {
+    ): Promise<void> {
         const merger = await this.db.get(mergerId);
         if (!merger) {
             throw new MergerNotFoundFault();
         }
 
         const existingOutput = merger.getOutput();
-        if (existingOutput) return existingOutput;
+        if (existingOutput) return;
 
         const files = merger.getFiles();
         let outputFile: MergerFile | null = null;
@@ -150,8 +181,6 @@ class MergerService {
                 BtoM(outputFile.size)
             )} MB)`
         );
-
-        return outputFile;
     }
 
     private log(...message: string[]) {
