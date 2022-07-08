@@ -13,13 +13,15 @@ import MergeFault from "../../errors/MergeFault";
 import execAsync from "../../utils/execAsync";
 import ffmpegDate from "../../utils/ffmpegDate";
 import MergerAlreadyExistsFault from "../../errors/MergerAlreadyExistsFault";
-import normalizePath from "../../utils/normalizePath";
 import MergerMaxFileSizeFault from "../../errors/MergerMaxFileSizeFault";
 import MergerMaxFileCountFault from "../../errors/MergerMaxFileCountFault";
 import Fault from "../../errors/Fault";
 import AddFilesFault from "../../errors/AddFilesFault";
 
 const config = ConfigService.getConfig();
+const orange = chalk.keyword("orange");
+
+const BtoM = (b: number) => (b / 1024 / 1024).toFixed(2);
 
 class MergerService {
     // eslint-disable-next-line no-use-before-define
@@ -46,6 +48,8 @@ class MergerService {
             moment().add(config.cleanupMergersDelay, "ms").toDate(),
             () => this.deleteMerger(merger.id)
         );
+
+        this.log(`merge ${merger.id}: ${orange("Created")}`);
 
         return merger.id;
     }
@@ -82,6 +86,11 @@ class MergerService {
                 }
 
                 await merger.addFiles(intermediateFile);
+                this.log(
+                    `merge ${merger.id}: Added ${orange(
+                        intermediateFile.path
+                    )} (${orange(BtoM(intermediateFile.size))} MB)`
+                );
             }
         } catch (e) {
             if (e instanceof Fault) {
@@ -115,7 +124,9 @@ class MergerService {
         let outputFile: MergerFile | null = null;
 
         try {
-            this.log(`merge ${merger.id}: Merging ${files.length} files`);
+            this.log(
+                `merge ${merger.id}: Merging ${orange(files.length)} files`
+            );
             outputFile = await this.createMergedFile(
                 files.map((f) => f.path),
                 creationDate
@@ -135,7 +146,9 @@ class MergerService {
         await this.db.update(merger.id, merger);
 
         this.log(
-            `merge ${merger.id}: Merged to ${outputFile.path} (${outputFile.size} bytes)`
+            `merge ${merger.id}: Merged to ${orange(outputFile.path)} (${orange(
+                BtoM(outputFile.size)
+            )} MB)`
         );
 
         return outputFile;
@@ -167,7 +180,7 @@ class MergerService {
         inputFilePath: string,
         maxSize: number
     ): Promise<MergerFile> {
-        const intermediatePath = normalizePath(path.join(DIR_INPUTS, uuid()));
+        const intermediatePath = path.join(DIR_INPUTS, uuid());
         const command = `ffmpeg -i "${inputFilePath}" -fs ${maxSize}B -c copy -bsf:v h264_mp4toannexb -f mpegts ${intermediatePath}`;
 
         await execAsync(command);
@@ -180,9 +193,7 @@ class MergerService {
         inputPaths: string[],
         creationDate = new Date()
     ): Promise<MergerFile> {
-        const outputPath = normalizePath(
-            path.join(DIR_OUTPUTS, `${uuid()}.mp4`)
-        );
+        const outputPath = path.join(DIR_OUTPUTS, `${uuid()}.mp4`);
         const creationTime = ffmpegDate(creationDate);
         const input = inputPaths.join("|");
         const ffmpegCommand = `ffmpeg -i "concat:${input}" -metadata creation_time="${creationTime}" -c copy -bsf:a aac_adtstoasc ${outputPath}`;
