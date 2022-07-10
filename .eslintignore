@@ -1,4 +1,4 @@
 node_modules
 dist
 *.json
-ecosystem.config.js
+pm2.config.cjs
