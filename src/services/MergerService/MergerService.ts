@@ -20,6 +20,7 @@ import Fault from "../../errors/Fault";
 import AddFilesFault from "../../errors/AddFilesFault";
 import Database from "../DatabaseService/Database/Database";
 import Service from "../Service/Service";
+import MergerEmptyFault from "../../errors/MergerEmptyFault";
 
 const config = ConfigService.getConfig();
 const orange = chalk.keyword("orange");
@@ -163,6 +164,10 @@ class MergerService extends Service {
 
         const files = merger.getFiles();
         let outputFile: MergerFile | null = null;
+
+        if (!files.length) {
+            throw new MergerEmptyFault();
+        }
 
         try {
             this.log(
