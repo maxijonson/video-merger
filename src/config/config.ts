@@ -17,4 +17,5 @@ ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("mergerLogging", "MERGER_LOGGING", true)
     .addConfig("dbLogging", "DB_LOGGING", true)
     .addConfig("dbAdapter", "DB_ADAPTER", "fs")
+    .addConfig("redisURL", "REDIS_URL", "redis://localhost:6379")
     .addConfig("cleanAfterMerge", "CLEAN_AFTER_MERGE", true);

@@ -48,6 +48,11 @@ interface Config {
      */
     dbAdapter: "fs" | "redis";
 
+    /**
+     * The Redis URL to use when dbAdapter is `redis`.
+     */
+    redisURL: string;
+
     /** Enable request logging */
     requestLogging: boolean;
 

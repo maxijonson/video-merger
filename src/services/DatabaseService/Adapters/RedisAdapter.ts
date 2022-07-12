@@ -1,4 +1,6 @@
 import { Tedis } from "tedis";
+import { parseRedisUrl } from "parse-redis-url-simple";
+import ConfigService from "../../ConfigService/ConfigService";
 import Model from "../Models/Model";
 import Adapter from "./Adapter";
 
@@ -6,11 +8,13 @@ import Adapter from "./Adapter";
 // Currently, there is not true collection. Each item is a string entry with the key using the format `collection:id`.
 // Each item is stored as a JSON string and parsed when accessed by the app.
 
+const config = ConfigService.getConfig();
+
 class RedisAdapter extends Adapter {
     private client!: Tedis;
 
     public async init(): Promise<void> {
-        this.client = new Tedis();
+        this.client = new Tedis(RedisAdapter.getConfig());
         return new Promise<void>((resolve, reject) => {
             this.client.on("connect", () => {
                 resolve();
@@ -98,6 +102,16 @@ class RedisAdapter extends Adapter {
     private async getAllKeys(collectionId: string): Promise<string[]> {
         const keys = await this.client.keys(this.index(collectionId, "*"));
         return keys;
+    }
+
+    private static getConfig() {
+        const [redisConfig] = parseRedisUrl(config.redisURL);
+        if (!redisConfig) throw new Error("Invalid Redis URl");
+        return {
+            host: redisConfig.host,
+            port: redisConfig.port,
+            password: redisConfig.password,
+        };
     }
 }
 
