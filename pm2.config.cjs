@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const DB_ADAPTER = process.env.DB_ADAPTER || "fs";
 const CLUSTER_MODE = process.env.CLUSTER_MODE || "true";
 

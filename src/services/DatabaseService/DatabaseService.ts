@@ -3,6 +3,7 @@ import ConfigService from "../ConfigService/ConfigService";
 import Service from "../Service/Service";
 import Adapter from "./Adapters/Adapter";
 import FSAdapter from "./Adapters/FSAdapter";
+import RedisAdapter from "./Adapters/RedisAdapter";
 import Database from "./Database/Database";
 import Model from "./Models/Model";
 
@@ -16,36 +17,27 @@ class DatabaseService extends Service {
 
     private constructor() {
         super("Database Service");
-        try {
-            switch (config.dbAdapter) {
-                case "fs":
-                    this.adapter = new FSAdapter();
-                    break;
-                default:
-                    throw new Error(`Unknown db adapter: ${config.dbAdapter}`);
-            }
+        switch (config.dbAdapter) {
+            case "fs":
+                this.adapter = new FSAdapter();
+                break;
+            case "redis":
+                this.adapter = new RedisAdapter();
+                break;
+            default:
+                throw new Error(`Unknown db adapter: ${config.dbAdapter}`);
+        }
 
-            const p = this.adapter.init();
+        const p = this.adapter.init();
 
-            if (p instanceof Promise) {
-                p.then(() => {
-                    this.notifyReady();
-                }).catch((e) => {
-                    if (e instanceof Error) {
-                        console.error(e);
-                    }
-                    this.notifyError(new ServiceLoadingFault());
-                });
-            } else {
-                this.notifyReady();
-            }
-        } catch (e) {
+        p.then(() => {
+            this.notifyReady();
+        }).catch((e) => {
             if (e instanceof Error) {
                 console.error(e);
             }
             this.notifyError(new ServiceLoadingFault());
-            throw e;
-        }
+        });
     }
 
     public static get instance(): DatabaseService {
@@ -55,8 +47,11 @@ class DatabaseService extends Service {
         return DatabaseService.serviceInstance;
     }
 
-    public getDatabase<T extends Model>(id: string): Database<T> {
-        return new Database<T>(id, this.adapter);
+    public getDatabase<T extends Model>(
+        id: string,
+        fromJSON: (json: object) => T
+    ): Database<T> {
+        return new Database<T>(id, this.adapter, fromJSON);
     }
 }
 

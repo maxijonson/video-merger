@@ -54,7 +54,7 @@ class FSAdapter extends Adapter {
         collectionId: string,
         id: string
     ): Promise<T | null> {
-        const exists = this.has(collectionId, id);
+        const exists = await this.has(collectionId, id);
         if (!exists) return null;
         return this.db.data[collectionId][id] as T;
     }
@@ -67,7 +67,7 @@ class FSAdapter extends Adapter {
         collectionId: string,
         data: T
     ): Promise<T | null> {
-        const exists = this.has(collectionId, data.id);
+        const exists = await this.has(collectionId, data.id);
         if (!exists) return null;
         this.db.data[collectionId][data.id] = data;
         await this.save();
@@ -75,7 +75,7 @@ class FSAdapter extends Adapter {
     }
 
     public async delete(collectionId: string, id: string): Promise<boolean> {
-        const exists = this.has(collectionId, id);
+        const exists = await this.has(collectionId, id);
         if (!exists) return false;
         delete this.db.data[collectionId][id];
         await this.save();
@@ -84,6 +84,10 @@ class FSAdapter extends Adapter {
 
     public async getAll<T extends Model>(collectionId: string): Promise<T[]> {
         return Object.values(this.db.data[collectionId]);
+    }
+
+    public async close(): Promise<void> {
+        await this.save();
     }
 
     private save(): Promise<void> {

@@ -9,7 +9,10 @@ import DatabaseService from "../services/DatabaseService/DatabaseService";
 import MergerModel from "../services/DatabaseService/Models/MergerModel";
 
 const flush = async () => {
-    const mergersDb = DatabaseService.getDatabase<MergerModel>(DB_MERGERS);
+    const mergersDb = DatabaseService.getDatabase(
+        DB_MERGERS,
+        MergerModel.fromJSON
+    );
 
     await Promise.all([
         mergersDb.clear(),

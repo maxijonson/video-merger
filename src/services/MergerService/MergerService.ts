@@ -36,7 +36,10 @@ class MergerService extends Service {
     private constructor() {
         super("Merger Service");
         DatabaseService.onReady(() => {
-            this.db = DatabaseService.getDatabase<MergerModel>(DB_MERGERS);
+            this.db = DatabaseService.getDatabase(
+                DB_MERGERS,
+                MergerModel.fromJSON
+            );
             this.notifyReady();
         }).onError((error) => {
             this.notifyError(error);
@@ -123,27 +126,31 @@ class MergerService extends Service {
     public async sendMergedFile(
         mergerId: string,
         res: Response,
-        creationDate = new Date()
-    ) {
+        creationDate = new Date(),
+        mergeIfNotExists = true
+    ): Promise<void> {
         const merger = await this.db.get(mergerId);
         if (!merger) {
             throw new MergerNotFoundFault();
         }
 
-        let output = merger.getOutput();
+        const output = merger.getOutput();
         if (!output) {
-            await this.merge(mergerId, creationDate);
-            output = merger.getOutput();
-
-            if (!output) {
+            if (!mergeIfNotExists) {
+                this.err(
+                    `merge ${merger.id}: No output file found after merging.`
+                );
                 throw new MergeFault();
             }
+            await this.merge(mergerId, creationDate);
+            return this.sendMergedFile(mergerId, res, creationDate, false);
         }
 
-        res.sendFile(output.path, (err) => {
+        return res.sendFile(output.path, (err) => {
             if (err) {
                 throw new MergeFault();
             }
+            this.log(`merge ${merger.id}: Sent ${orange(output.path)}`);
             if (config.cleanAfterMerge) {
                 this.deleteMerger(mergerId);
             }
@@ -179,8 +186,8 @@ class MergerService extends Service {
             );
         } catch (err) {
             if (err instanceof Error) {
-                console.error(chalk.red(err.message));
-                console.error(chalk.red(err.stack));
+                this.err(chalk.red(err.message));
+                this.err(chalk.red(err.stack));
             }
         }
 
@@ -195,6 +202,14 @@ class MergerService extends Service {
             `merge ${merger.id}: Merged to ${orange(outputFile.path)} (${orange(
                 BtoM(outputFile.size)
             )} MB)`
+        );
+    }
+
+    private err(...message: string[]) {
+        if (!config.mergerLogging) return;
+        console.error(
+            chalk.bold.bgRed("[MergerService] Error:"),
+            chalk.red(message)
         );
     }
 

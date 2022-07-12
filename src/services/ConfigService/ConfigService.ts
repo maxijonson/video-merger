@@ -44,14 +44,18 @@ interface Config {
      *
      * Possible values:
      * - `fs` - Uses a JSON file system to store data with LowDB.
+     * - `redis` - Uses a Redis database to store data. (Requires Redis to be installed)
      */
-    dbAdapter: "fs";
+    dbAdapter: "fs" | "redis";
 
     /** Enable request logging */
     requestLogging: boolean;
 
     /** Enable merger logging */
     mergerLogging: boolean;
+
+    /** Enable database logging */
+    dbLogging: boolean;
 }
 
 class ConfigService extends Service {

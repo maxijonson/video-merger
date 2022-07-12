@@ -82,6 +82,12 @@ class MergerModel extends Model {
             throw new MergerDisposedFault();
         }
     }
+
+    public static override fromJSON(json: object): MergerModel {
+        const model = new MergerModel();
+        Object.assign(model, json);
+        return model;
+    }
 }
 
 export default MergerModel;

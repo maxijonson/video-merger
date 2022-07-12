@@ -15,5 +15,6 @@ ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("cleanupMergersDelay", "CLEANUP_MERGERS_DELAY", 1000 * 45)
     .addConfig("requestLogging", "REQUEST_LOGGING", true)
     .addConfig("mergerLogging", "MERGER_LOGGING", true)
+    .addConfig("dbLogging", "DB_LOGGING", true)
     .addConfig("dbAdapter", "DB_ADAPTER", "fs")
     .addConfig("cleanAfterMerge", "CLEAN_AFTER_MERGE", true);

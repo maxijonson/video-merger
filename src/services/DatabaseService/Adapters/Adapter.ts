@@ -86,6 +86,11 @@ abstract class Adapter {
      * @returns An array of all items in the collection
      */
     public abstract getAll<T extends Model>(collectionId: string): Promise<T[]>;
+
+    /**
+     * Use to close the adapter.
+     */
+    public abstract close(): Promise<void>;
 }
 
 export default Adapter;
