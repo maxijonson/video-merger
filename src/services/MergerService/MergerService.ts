@@ -21,6 +21,7 @@ import AddFilesFault from "../../errors/AddFilesFault";
 import Database from "../DatabaseService/Database/Database";
 import Service from "../Service/Service";
 import MergerEmptyFault from "../../errors/MergerEmptyFault";
+import MergersCountExceededFault from "../../errors/MergersCountExceededFault";
 
 const config = ConfigService.getConfig();
 const orange = chalk.keyword("orange");
@@ -54,6 +55,12 @@ class MergerService extends Service {
     }
 
     public async create(): Promise<string> {
+        const nMergers = await this.db.count();
+
+        if (nMergers >= config.maxMergers) {
+            throw new MergersCountExceededFault();
+        }
+
         const merger = await this.db.create(new MergerModel());
 
         if (!merger) throw new MergerAlreadyExistsFault();

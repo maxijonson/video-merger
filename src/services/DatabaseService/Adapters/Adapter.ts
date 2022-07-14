@@ -59,6 +59,13 @@ abstract class Adapter {
     public abstract has(collectionId: string, id: string): Promise<boolean>;
 
     /**
+     * Counts the number of items in a collection.
+     *
+     * @param collectionId The id of the collection
+     */
+    public abstract count(collectionId: string): Promise<number>;
+
+    /**
      * Updates an item in a collection.
      *
      * @param collectionId The id of the collection

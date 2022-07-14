@@ -63,6 +63,11 @@ class FSAdapter extends Adapter {
         return !!this.db.data[collectionId][id];
     }
 
+    public async count(collectionId: string): Promise<number> {
+        if (!this.db.data[collectionId]) return 0;
+        return Object.keys(this.db.data[collectionId]).length;
+    }
+
     public async update<T extends Model>(
         collectionId: string,
         data: T

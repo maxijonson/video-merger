@@ -48,6 +48,11 @@ class Database<T extends Model> {
         return this.adapter.has(this.collectionId, id);
     }
 
+    public async count() {
+        await this.ensureCollectionExists();
+        return this.adapter.count(this.collectionId);
+    }
+
     public async delete(id: string) {
         await this.ensureCollectionExists();
         this.log("Delete", orange(id));

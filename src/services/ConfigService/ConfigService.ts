@@ -25,6 +25,9 @@ interface Config {
     /** Maximum total size a merger can hold */
     maxMergerFileSize: number;
 
+    /** Maximum amount of total mergers that can exist at the same time */
+    maxMergers: number;
+
     /**
      * Delay before:
      * - A merger's associated files (input and output) are deleted to free storage

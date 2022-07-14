@@ -73,6 +73,11 @@ class RedisAdapter extends Adapter {
         return n === 1;
     }
 
+    public async count(collectionId: string): Promise<number> {
+        const keys = await this.getAllKeys(collectionId);
+        return keys.length;
+    }
+
     public async update<T extends Model>(
         collectionId: string,
         data: T
