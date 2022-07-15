@@ -19,4 +19,5 @@ ConfigService.addConfig("port", "PORT", 3000)
     .addConfig("dbLogging", "DB_LOGGING", true)
     .addConfig("dbAdapter", "DB_ADAPTER", "fs")
     .addConfig("redisURL", "REDIS_URL", "redis://localhost:6379")
+    .addConfig("mongoURL", "MONGO_URL", "mongodb://localhost:27017")
     .addConfig("cleanAfterMerge", "CLEAN_AFTER_MERGE", true);

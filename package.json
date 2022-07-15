@@ -65,6 +65,7 @@
         "lodash": "^4.17.21",
         "lowdb": "^3.0.0",
         "moment": "^2.29.3",
+        "mongoose": "^6.4.4",
         "multer": "^1.4.5-lts.1",
         "node-schedule": "^2.1.0",
         "parse-redis-url-simple": "^1.0.2",

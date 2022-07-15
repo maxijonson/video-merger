@@ -78,6 +78,7 @@ class MergerService extends Service {
 
     public async append(mergerId: string, ...files: Express.Multer.File[]) {
         const merger = await this.db.get(mergerId);
+        const intermediateFiles: MergerFile[] = [];
         let err: any | null = null;
 
         if (!merger) throw new MergerNotFoundFault();
@@ -103,10 +104,11 @@ class MergerService extends Service {
                 // We use <= instead of <, because FFMPEG only LIMITS the size of the file, it does not throw an error if it is bigger.
                 // If the intermediate file size is the same as the remaining size, it most likely means the file was too big.
                 if (remainingSize <= intermediateFile.size) {
-                    await fs.remove(intermediateFile.path);
+                    await this.removeFiles([intermediateFile]);
                     throw new MergerMaxFileSizeFault();
                 }
 
+                intermediateFiles.push(intermediateFile);
                 await merger.addFiles(intermediateFile);
                 this.log(
                     `merge ${merger.id}: Added ${orange(
@@ -122,8 +124,13 @@ class MergerService extends Service {
             }
         }
 
-        await Promise.all(files.map((f) => fs.remove(f.path)));
-        await this.db.update(merger.id, merger);
+        await this.removeFiles(files);
+        try {
+            await this.db.update(merger.id, merger);
+        } catch (e) {
+            await this.removeFiles(intermediateFiles);
+            throw e;
+        }
 
         if (err) {
             throw err;
@@ -269,6 +276,10 @@ class MergerService extends Service {
         const { size } = await fs.stat(outputPath);
 
         return { path: outputPath, size };
+    }
+
+    private async removeFiles(files: MergerFile[]) {
+        return Promise.all(files.map((f) => fs.remove(f.path)));
     }
 }
 

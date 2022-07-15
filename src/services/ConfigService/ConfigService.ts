@@ -48,13 +48,19 @@ interface Config {
      * Possible values:
      * - `fs` - Uses a JSON file system to store data with LowDB.
      * - `redis` - Uses a Redis database to store data. (Requires Redis to be installed)
+     * - `mongo` - Uses a MongoDB database to store data. (Requires MongoDB to be installed)
      */
-    dbAdapter: "fs" | "redis";
+    dbAdapter: "fs" | "redis" | "mongo";
 
     /**
      * The Redis URL to use when dbAdapter is `redis`.
      */
     redisURL: string;
+
+    /**
+     * The MongoDB URL to use when dbAdapter is `mongo`.
+     */
+    mongoURL: string;
 
     /** Enable request logging */
     requestLogging: boolean;

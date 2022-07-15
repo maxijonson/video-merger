@@ -14,13 +14,7 @@ class Database<T extends Model> {
     ) {}
 
     private async ensureCollectionExists() {
-        const created = await this.adapter.createCollection(
-            this.collectionId,
-            false
-        );
-        if (created) {
-            this.log("Collection created");
-        }
+        await this.adapter.createCollection(this.collectionId, false);
     }
 
     public async create(data: T, overwrite = false) {

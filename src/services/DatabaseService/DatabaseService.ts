@@ -3,6 +3,7 @@ import ConfigService from "../ConfigService/ConfigService";
 import Service from "../Service/Service";
 import Adapter from "./Adapters/Adapter";
 import FSAdapter from "./Adapters/FSAdapter";
+import MongoAdapter from "./Adapters/MongoAdapter";
 import RedisAdapter from "./Adapters/RedisAdapter";
 import Database from "./Database/Database";
 import Model from "./Models/Model";
@@ -23,6 +24,9 @@ class DatabaseService extends Service {
                 break;
             case "redis":
                 this.adapter = new RedisAdapter();
+                break;
+            case "mongo":
+                this.adapter = new MongoAdapter();
                 break;
             default:
                 throw new Error(`Unknown db adapter: ${config.dbAdapter}`);
