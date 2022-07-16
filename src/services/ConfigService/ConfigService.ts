@@ -38,7 +38,7 @@ interface Config {
     cleanupMergersDelay: number;
 
     /**
-     * Whether or not to clean up the merger immediately after sending a merged video, instead of waiting for `cleanuptMergersDelay`.
+     * Whether or not to clean up the merger immediately after sending a merged video, instead of waiting for `cleanupMergersDelay`.
      */
     cleanAfterMerge: boolean;
 
