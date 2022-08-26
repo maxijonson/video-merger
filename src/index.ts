@@ -17,11 +17,11 @@ import ServiceLoadingFault from "./errors/ServiceLoadingFault";
 const app = express();
 const config = ConfigService.getConfig();
 
-app.use(prepareRequestBody, authenticate, logRequest);
-
-app.get("/", (_req, res) => {
+app.get("/health", (_req, res) => {
     return res.sendStatus(200);
 });
+
+app.use(prepareRequestBody, authenticate, logRequest);
 
 app.post(
     "/",
